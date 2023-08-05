@@ -13,6 +13,8 @@ require(knitr)
 require(dplyr)
 require(ggplot2)
 require(viridis)
+require(reshape2)
+require(GGally)
 ```
 
 ## Data preprocessing
@@ -132,12 +134,14 @@ summary_depression <- aggregate(Depression ~ DX, data = clean_df, function(x) c(
 summary_depression2 <- do.call(data.frame, summary_depression)
 summary_depression2
 ```
+
 ```{r}
 ggplot(summary_depression2, aes(x = DX, y = Depression.mean, fill = DX)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
   geom_errorbar(aes(ymin = Depression.mean - Depression.sd, ymax = Depression.mean + Depression.sd), width = 0.2, position = position_dodge(width = 0.8)) +
   labs(title = "Depression Summary by Clinical Group", x = "Clinical group", y = "Mean Depression Score") +
   theme_minimal() +
+  geom_point(aes(color=DX), alpha = 0.5)+
   theme(
     plot.title = element_text(hjust = 0.5),
     legend.position = "none" 
@@ -161,6 +165,7 @@ summary_anxiety <- aggregate(Anxiety ~ DX, data = clean_df, function(x) c(mean =
 summary_anxiety2 <- do.call(data.frame, summary_anxiety)
 summary_anxiety2
 ```
+
 ```{r}
 ggplot(summary_anxiety2, aes(x = DX, y = Anxiety.mean, fill = DX)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
@@ -172,6 +177,7 @@ ggplot(summary_anxiety2, aes(x = DX, y = Anxiety.mean, fill = DX)) +
     legend.position = "none" 
   )
 ```
+
 There is higher anxiety rate in ADHD patients, but the standard deviation values show that there is no statistical significance.
 
 ```{r}
@@ -181,4 +187,41 @@ ggplot(clean_df, aes(x = factor(DX), y = a1a5, fill = DX)) +
   geom_point(aes(color=DX), alpha = 0.5)+
   geom_smooth()
 
+```
+
+```{r}
+clean_df <- clean_df[!apply(clean_df == 999, 1, any), ]
+
+melted_df <- melt(clean_df, id.vars = NULL, variable.name = "Variable")
+```
+
+```{r}
+ggplot(melted_df, aes(x = Variable, y = value, fill = Variable)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  labs(title = "Porównanie danych z różnych kolumn", x = "Kolumna", y = "Wartość") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  facet_wrap(~Variable, scales = "free", ncol = 2)
+```
+
+```{r}
+data<-dplyr::select(clean_df, DX, Animais, FAS, TMTA, A7)
+data <- data[!apply(data == 999, 1, any), ]
+print(data)
+```
+
+```{r}
+data %>%
+  ggpairs(aes(color = as.factor(DX), alpha = 0.7),
+    upper = list(continuous = wrap("points", size = 2.5))
+  ) +
+  theme(
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank()
+  )
 ```
