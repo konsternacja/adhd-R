@@ -18,7 +18,7 @@ require(viridis)
 ## Data preprocessing
 
 ```{r}
-adhd_df <- read_excel(path = "ADHD_MC.xlsx")
+adhd_df <- read_excel(path = "data/ADHD_MC.xlsx")
 adhd_df
 kable(adhd_df)
 ```
@@ -46,34 +46,38 @@ kable(clean_df)
 ## Data visualisation
 
 ```{r}
+pastel_colors <- c("#A6CEE3", "#B2DF8A")
+labels <- c("Women", "Men")
 ggplot(clean_df, aes(x = factor(SEXO), fill = factor(SEXO))) +
   geom_bar() +
   labs(title = "Ratio between men and women", x = "Sex", y = "Number") +
-  scale_x_discrete(labels = c("women", "men")) +
-  scale_fill_viridis_d(option = "C") +
+  scale_x_discrete(labels = c("Women", "Men")) +
+  scale_fill_manual(values = pastel_colors, labels = labels) +
   theme_minimal() +
-  geom_smooth () +
   theme(
-    plot.title = element_text(hjust = 0.5),  
-    panel.grid.major = element_blank(),      
-    panel.grid.minor = element_blank()       
+    plot.title = element_text(hjust = 0.5),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
   )
 ```
 
 ```{r}
 sex <- table(clean_df$SEXO)
-women <- sex[1]/(sex[1]+sex[2])*100
+women <- sex[1] / (sex[1] + sex[2]) * 100
 men <- 100 - women
 message <- sprintf("There were %.2f%% females.", women)
 cat(message, "\n")
 ```
 
 ```{r}
+pastel_colors <- c("#A6CEE3", "#B2DF8A", "#D8BFD8")
+labels <- c("control", "MCI", "ADHD")
+
 ggplot(clean_df, aes(x = factor(DX), fill = factor(DX))) +
   geom_bar() +
   labs(title = "Ratio between clinical groups", x = "Clinical group", y = "Number") +
   scale_x_discrete(labels = c("control", "MCI", "ADHD")) +
-  scale_fill_discrete(labels = c("control", "MCI", "ADHD")) +  
+  scale_fill_manual(values = pastel_colors, labels = labels) +  
   theme_minimal() +
   theme(
     plot.title = element_text(hjust = 0.5),  
@@ -128,6 +132,17 @@ summary_depression <- aggregate(Depression ~ DX, data = clean_df, function(x) c(
 summary_depression2 <- do.call(data.frame, summary_depression)
 summary_depression2
 ```
+```{r}
+ggplot(summary_depression2, aes(x = DX, y = Depression.mean, fill = DX)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  geom_errorbar(aes(ymin = Depression.mean - Depression.sd, ymax = Depression.mean + Depression.sd), width = 0.2, position = position_dodge(width = 0.8)) +
+  labs(title = "Depression Summary by Clinical Group", x = "Clinical group", y = "Mean Depression Score") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none" 
+  )
+```
 
 There is higher depression rate in ADHD patients, but the standard deviation values show that there is no statistical significance.
 
@@ -146,6 +161,18 @@ summary_anxiety <- aggregate(Anxiety ~ DX, data = clean_df, function(x) c(mean =
 summary_anxiety2 <- do.call(data.frame, summary_anxiety)
 summary_anxiety2
 ```
+```{r}
+ggplot(summary_anxiety2, aes(x = DX, y = Anxiety.mean, fill = DX)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  geom_errorbar(aes(ymin = Anxiety.mean - Anxiety.sd, ymax = Anxiety.mean + Anxiety.sd), width = 0.2, position = position_dodge(width = 0.8)) +
+  labs(title = "Anxiety Summary by Clinical Group", x = "Clinical group", y = "Mean Anxiety Score") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.position = "none" 
+  )
+```
+There is higher anxiety rate in ADHD patients, but the standard deviation values show that there is no statistical significance.
 
 ```{r}
 ggplot(clean_df, aes(x = factor(DX), y = a1a5, fill = DX)) +
