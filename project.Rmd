@@ -9,41 +9,37 @@ Assessing cognitive and behavioral differences between older subjects with ADHD 
 
 ```{r}
 require(readxl)
-require(knitr)
 require(dplyr)
 require(ggplot2)
 require(viridis)
 require(reshape2)
 require(GGally)
+require(cowplot)
 ```
 
 ## Data preprocessing
 
 ```{r}
-adhd_df <- read_excel(path = "data/ADHD_MC.xlsx")
-adhd_df
-kable(adhd_df)
+clean_df <- read_excel(path = "data/ADHD_MC.xlsx")
+clean_df[clean_df == 999] <- NA
+clean_df <- clean_df %>%
+  mutate_all(~ifelse(is.na(.), mean(., na.rm = TRUE), .))
+clean_df
 ```
 
 ```{r}
 #Missing values from the adhd_df
-nrow(adhd_df)
-sum(is.na(adhd_df))
-last_cols <- adhd_df[c('cubost','TMTAz','TMTBz')]
+nrow(clean_df)
+sum(is.na(clean_df))
+last_cols <- clean_df[c('cubost','TMTAz','TMTBz')]
 colSums(is.na(last_cols))
 ```
 
 ```{r}
-str(adhd_df)
+str(clean_df)
 ```
 
 There is one empty column in this dataset.
-
-```{r}
-clean_df <- adhd_df %>% select(-33)
-clean_df
-kable(clean_df)
-```
 
 ## Data visualisation
 
@@ -72,7 +68,7 @@ cat(message, "\n")
 ```
 
 ```{r}
-pastel_colors <- c("#A6CEE3", "#B2DF8A", "#D8BFD8")
+pastel_colors <- c("#A6CEE3", "#B2DF8A", "#D8BFD8", 'black')
 labels <- c("control", "MCI", "ADHD")
 
 ggplot(clean_df, aes(x = factor(DX), fill = factor(DX))) +
@@ -186,42 +182,39 @@ ggplot(clean_df, aes(x = factor(DX), y = a1a5, fill = DX)) +
   labs(x = "Clinical group", y = "a1a5")+ 
   geom_point(aes(color=DX), alpha = 0.5)+
   geom_smooth()
-
 ```
 
-```{r}
-clean_df <- clean_df[!apply(clean_df == 999, 1, any), ]
-
-melted_df <- melt(clean_df, id.vars = NULL, variable.name = "Variable")
-```
-
-```{r}
-ggplot(melted_df, aes(x = Variable, y = value, fill = Variable)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  labs(title = "Porównanie danych z różnych kolumn", x = "Kolumna", y = "Wartość") +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  ) +
-  facet_wrap(~Variable, scales = "free", ncol = 2)
-```
 
 ```{r}
 data<-dplyr::select(clean_df, DX, Animais, FAS, TMTA, A7)
-data <- data[!apply(data == 999, 1, any), ]
 print(data)
 ```
-
 ```{r}
 data %>%
   ggpairs(aes(color = as.factor(DX), alpha = 0.7),
-    upper = list(continuous = wrap("points", size = 2.5))
-  ) +
+    upper = list(continuous = wrap("points", size = 2.5))) +
   theme(
     axis.ticks.x = element_blank(),
     axis.text.x = element_blank(),
     axis.ticks.y = element_blank(),
     axis.text.y = element_blank()
   )
+```
+
+```{r}
+hist.IDADE <- ggplot(data = clean_df, aes(IDADE)) +
+  geom_histogram()
+
+hist.GAI <- ggplot(data = clean_df, aes(GAI)) +
+  geom_histogram()
+
+hist.GDS <- ggplot(data = clean_df, aes(GDS)) +
+  geom_histogram()
+
+hist.ESC <- ggplot(data = clean_df, aes(ESC)) +
+  geom_histogram()
+
+labels = c('age', 'gai','gds','ESC')
+
+plot_grid(hist.IDADE, hist.GAI, hist.GDS, hist.ESC, align = "hv")
 ```
