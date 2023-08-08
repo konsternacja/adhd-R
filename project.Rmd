@@ -15,6 +15,7 @@ require(viridis)
 require(reshape2)
 require(GGally)
 require(cowplot)
+require(tidyr)
 ```
 
 ## Data preprocessing
@@ -68,7 +69,7 @@ cat(message, "\n")
 ```
 
 ```{r}
-pastel_colors <- c("#A6CEE3", "#B2DF8A", "#D8BFD8", 'black')
+pastel_colors <- c("#A6CEE3", "#B2DF8A", "#D8BFD8")
 labels <- c("control", "MCI", "ADHD")
 
 ggplot(clean_df, aes(x = factor(DX), fill = factor(DX))) +
@@ -217,4 +218,40 @@ hist.ESC <- ggplot(data = clean_df, aes(ESC)) +
 labels = c('age', 'gai','gds','ESC')
 
 plot_grid(hist.IDADE, hist.GAI, hist.GDS, hist.ESC, align = "hv")
+```
+```{r}
+clean_df[2]
+clean_df
+```
+```{r}
+significant_columns <- c()
+
+for (column in 3:32) {
+  model <- aov(DX ~ factor(clean_df[[column]]), data = clean_df)
+  summary_result <- summary(model)
+  if (summary_result[[1]]$`Pr(>F)`[1] < 0.05) {
+    cat("Column:", colnames(clean_df)[column], "has a significant difference.\n")
+    significant_columns <- c(significant_columns, colnames(clean_df)[column])
+  }
+}
+```
+
+```{r}
+# Tworzenie ramki danych z danymi do wykresu
+mean_data <- clean_df %>%
+  group_by(DX) %>%
+  summarise(across(all_of(significant_columns), mean))
+
+# Przygotowanie danych do wykresu w formacie "dłuższym"
+mean_data_long <- pivot_longer(mean_data, cols = -DX, names_to = "Column", values_to = "Mean")
+
+# Tworzenie wykresu kolumnowego
+ggplot(mean_data_long, aes(x = Column, y = Mean, fill = factor(DX))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Means for Significant Columns with respect to DX", y = "Mean", fill = "DX") +
+  theme_minimal()
+```
+
+```{r}
+
 ```
