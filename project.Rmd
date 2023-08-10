@@ -16,6 +16,7 @@ require(reshape2)
 require(GGally)
 require(cowplot)
 require(tidyr)
+require(car)
 ```
 
 ## Data preprocessing
@@ -272,3 +273,15 @@ plot(df.lm1, pch = 20)
 -   The Q-Q plot shows that the data does not deviate from normal.
 -   On scale-location points are more or less near a red line - data is homosedantic.
 -   On the last plot we can see that there is one outlier - 107.
+```{r}
+n <- length(clean_df$DX)
+par(mfrow = c(1, 2))
+cutoff <- 4 / (n - length(df.lm1$coefficients) - 2)
+influencePlot(df.lm1, fill.alpha = 1, fill.col = "red")
+```
+
+```{r}
+plot(df.lm1, which = 4, cook.levels = cutoff, lwd = 2)
+abline(h = cutoff, col = "red", lty = 2, lwd = 2)
+```
+There is one strong outlier - 107.
