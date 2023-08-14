@@ -6,9 +6,15 @@ Attention-Deficit/Hyperactivity Disorder (ADHD) is a highly prevalent neurodevel
 ## Objectives
 The main goal was to visualise the data and find patterns in them. Additionally an attempt was made to find a suitable model for disease prediction from psychological profile of the patient.
 
+## What was done:
+- data visualisation
+- statistical analysis (including ANOVA)
+- linear model
+
 ## Methods
 - RMarkdown
-- ggplot
+- ggplot (with GGally and cowplot)
+- Car 
 
 ## References
 [1] [ADHD in aging dataset](https://figshare.com/articles/dataset/ADHD_in_aging/14916888)
