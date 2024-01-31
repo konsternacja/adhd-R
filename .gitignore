@@ -1,3 +1,6 @@
-.RData
-.Rhistory
-.vscode
+.~lock*
+
+*.RData
+*.Rhistory
+*.vscode
+
